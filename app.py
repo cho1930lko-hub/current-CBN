@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import html as html_lib
 from datetime import datetime, timedelta
 import time
 import os
@@ -532,6 +533,14 @@ UP_DISTRICTS = [
 ]
 
 # ─────────────────────────────────────────────
+# 🔑  SESSION STATE INIT (top-level, before sidebar)
+# ─────────────────────────────────────────────
+if "news_api_key" not in st.session_state:
+    st.session_state["news_api_key"] = ""
+if "groq_api_key" not in st.session_state:
+    st.session_state["groq_api_key"] = ""
+
+# ─────────────────────────────────────────────
 # 🗂️  SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
@@ -544,24 +553,24 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     st.markdown("**🔑 API Keys**")
-    news_api_key = st.text_input(
+    st.text_input(
         "NewsAPI Key (Free)",
-        value=st.session_state.get("news_api_key", ""),
+        key="news_api_key",
         type="password",
         help="newsapi.org पर free account बनाएँ",
         placeholder="xxxxxxxxxxxxxxxx"
     )
-    groq_api_key = st.text_input(
+    st.text_input(
         "Groq API Key (Free)",
-        value=st.session_state.get("groq_api_key", ""),
+        key="groq_api_key",
         type="password",
         help="console.groq.com पर free account बनाएँ",
         placeholder="gsk_xxxxxxxxxxxx"
     )
-    if news_api_key:
-        st.session_state["news_api_key"] = news_api_key
-    if groq_api_key:
-        st.session_state["groq_api_key"] = groq_api_key
+
+    # Read from session_state directly — always in sync
+    news_api_key = st.session_state["news_api_key"]
+    groq_api_key = st.session_state["groq_api_key"]
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**📍 Filter**")
@@ -672,6 +681,18 @@ if selected_type != "सभी":
     filtered = [a for a in filtered if a.get("type") == type_map.get(selected_type, "")]
 
 
+def clean_text(text: str) -> str:
+    """Remove HTML tags and escape special chars from raw text."""
+    import re
+    # Remove HTML tags completely
+    clean = re.sub(r'<[^>]+>', '', text or '')
+    # Remove [+N chars] type suffixes from NewsAPI
+    clean = re.sub(r'\[\+\d+ chars?\]', '', clean)
+    # Collapse whitespace
+    clean = ' '.join(clean.split())
+    return clean.strip()
+
+
 def render_news_card(article, show_ai=False):
     a_type = article.get("type", "awareness")
     badge_map = {"negative": ("badge-red", "⚠️ FRAUD"), "positive": ("badge-green", "✅ ACTION"), "awareness": ("badge-gold", "📢 AWARENESS")}
@@ -682,19 +703,29 @@ def render_news_card(article, show_ai=False):
     url = article.get("url", "#")
     link_html = f'<a href="{url}" target="_blank" style="color:#00e5ff; text-decoration:none; font-size:0.78rem;">🔗 Read More</a>' if url != "#" else ""
 
+    # ✅ Clean title and description — strip all HTML tags
+    title_clean = clean_text(article.get('title', ''))
+    desc_raw    = article.get('description', '') or article.get('content', '') or ''
+    desc_clean  = clean_text(desc_raw)
+    desc_show   = desc_clean[:300] + ('…' if len(desc_clean) > 300 else '')
+
+    # If description is empty after cleaning, show a helpful fallback
+    if not desc_show.strip():
+        desc_show = "विस्तृत जानकारी के लिए 'Read More' पर click करें।"
+
     st.markdown(f"""
     <div class="news-card {a_type}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
             <span class="badge {badge_cls}">{badge_txt}</span>
             <span class="badge badge-cyan">📍 {district_tag}</span>
         </div>
-        <div class="news-title">{article.get('title','')}</div>
+        <div class="news-title">{title_clean}</div>
         <div class="news-meta">
             <span>📅 {date_str}</span>
             <span>📰 {source}</span>
             {link_html}
         </div>
-        <div class="news-summary">{article.get('description','')[:300]}{'…' if len(article.get('description',''))>300 else ''}</div>
+        <div class="news-summary">{desc_show}</div>
     </div>
     """, unsafe_allow_html=True)
 
