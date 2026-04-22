@@ -1,10 +1,37 @@
 import streamlit as st
 import requests
+import re
 import json
-import html as html_lib
 from datetime import datetime, timedelta
-import time
 import os
+
+# ─────────────────────────────────────────────
+# 🔑  SECRETS AUTO-LOAD (Streamlit Cloud support)
+# ─────────────────────────────────────────────
+def get_secret(key: str) -> str:
+    """Load from Streamlit secrets (Cloud) or session_state (local)."""
+    try:
+        val = st.secrets.get(key, "")
+        if val:
+            return val
+    except Exception:
+        pass
+    return st.session_state.get(key, "")
+
+
+def clean_text(text: str) -> str:
+    """Strip ALL HTML tags, entities, and NewsAPI junk from text."""
+    if not text:
+        return ""
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', ' ', text)
+    # Remove HTML entities like &amp; &nbsp; etc
+    text = re.sub(r'&[a-zA-Z]+;', ' ', text)
+    # Remove NewsAPI truncation marker like [+245 chars]
+    text = re.sub(r'\[\+\d+\s*chars?\]', '', text)
+    # Collapse whitespace
+    text = ' '.join(text.split())
+    return text.strip()
 
 # ─────────────────────────────────────────────
 # ⚙️  PAGE CONFIG
@@ -533,7 +560,7 @@ UP_DISTRICTS = [
 ]
 
 # ─────────────────────────────────────────────
-# 🔑  SESSION STATE INIT (top-level, before sidebar)
+# 🔑  SESSION STATE INIT
 # ─────────────────────────────────────────────
 if "news_api_key" not in st.session_state:
     st.session_state["news_api_key"] = ""
@@ -552,25 +579,34 @@ with st.sidebar:
     <hr style='border-color:rgba(0,229,255,0.15); margin:0.5rem 0 1.2rem;'>
     """, unsafe_allow_html=True)
 
-    st.markdown("**🔑 API Keys**")
-    st.text_input(
-        "NewsAPI Key (Free)",
-        key="news_api_key",
-        type="password",
-        help="newsapi.org पर free account बनाएँ",
-        placeholder="xxxxxxxxxxxxxxxx"
-    )
-    st.text_input(
-        "Groq API Key (Free)",
-        key="groq_api_key",
-        type="password",
-        help="console.groq.com पर free account बनाएँ",
-        placeholder="gsk_xxxxxxxxxxxx"
-    )
+    # Auto-load from Streamlit Secrets if available
+    _secret_news = get_secret("NEWS_API_KEY")
+    _secret_groq = get_secret("GROQ_API_KEY")
+    if _secret_news and not st.session_state["news_api_key"]:
+        st.session_state["news_api_key"] = _secret_news
+    if _secret_groq and not st.session_state["groq_api_key"]:
+        st.session_state["groq_api_key"] = _secret_groq
 
-    # Read from session_state directly — always in sync
-    news_api_key = st.session_state["news_api_key"]
-    groq_api_key = st.session_state["groq_api_key"]
+    # Show green tick if key loaded from secrets
+    news_from_secret = bool(_secret_news)
+    groq_from_secret = bool(_secret_groq)
+
+    st.markdown("**🔑 API Keys**")
+    if news_from_secret:
+        st.success("✅ NewsAPI — Secrets se load hua")
+    else:
+        st.text_input("NewsAPI Key (Free)", key="news_api_key", type="password",
+                      help="newsapi.org पर free account बनाएँ", placeholder="xxxxxxxxxxxxxxxx")
+
+    if groq_from_secret:
+        st.success("✅ Groq API — Secrets se load hua")
+    else:
+        st.text_input("Groq API Key (Free)", key="groq_api_key", type="password",
+                      help="console.groq.com पर free account बनाएँ", placeholder="gsk_xxxxxxxxxxxx")
+
+    # ✅ Global variables — always fresh from session_state
+    news_api_key = st.session_state.get("news_api_key", "")
+    groq_api_key = st.session_state.get("groq_api_key", "")
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**📍 Filter**")
@@ -679,18 +715,6 @@ if selected_district != "सभी जिले":
 type_map = {"🔴 Negative Cases": "negative", "🟢 Positive Actions": "positive", "🟡 Awareness": "awareness"}
 if selected_type != "सभी":
     filtered = [a for a in filtered if a.get("type") == type_map.get(selected_type, "")]
-
-
-def clean_text(text: str) -> str:
-    """Remove HTML tags and escape special chars from raw text."""
-    import re
-    # Remove HTML tags completely
-    clean = re.sub(r'<[^>]+>', '', text or '')
-    # Remove [+N chars] type suffixes from NewsAPI
-    clean = re.sub(r'\[\+\d+ chars?\]', '', clean)
-    # Collapse whitespace
-    clean = ' '.join(clean.split())
-    return clean.strip()
 
 
 def render_news_card(article, show_ai=False):
