@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import re
 import json
+import html as html_module
 from datetime import datetime, timedelta
 import os
 
@@ -19,13 +20,22 @@ def get_secret(key: str) -> str:
 
 
 def clean_text(text: str) -> str:
+    """Strip ALL HTML tags, decode entities, remove NewsAPI junk, then HTML-escape for safe rendering."""
     if not text:
         return ""
+    # Decode HTML entities like &amp; &nbsp; &#39; etc
+    text = html_module.unescape(text)
+    # Remove ALL HTML tags including </div> <div class="..."> etc
     text = re.sub(r'<[^>]+>', ' ', text)
-    text = re.sub(r'&[a-zA-Z]+;', ' ', text)
+    # Remove leftover entities
+    text = re.sub(r'&[a-zA-Z#0-9]+;', ' ', text)
+    # Remove NewsAPI truncation marker [+245 chars]
     text = re.sub(r'\[\+\d+\s*chars?\]', '', text)
-    text = ' '.join(text.split())
-    return text.strip()
+    # Collapse whitespace
+    text = ' '.join(text.split()).strip()
+    # ✅ HTML-escape so < > & don't break st.markdown unsafe_allow_html rendering
+    text = html_module.escape(text)
+    return text
 
 # ─────────────────────────────────────────────
 # ⚙️  PAGE CONFIG
@@ -949,4 +959,3 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
