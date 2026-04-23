@@ -9,7 +9,6 @@ import os
 # 🔑  SECRETS AUTO-LOAD (Streamlit Cloud support)
 # ─────────────────────────────────────────────
 def get_secret(key: str) -> str:
-    """Load from Streamlit secrets (Cloud) or session_state (local)."""
     try:
         val = st.secrets.get(key, "")
         if val:
@@ -20,16 +19,11 @@ def get_secret(key: str) -> str:
 
 
 def clean_text(text: str) -> str:
-    """Strip ALL HTML tags, entities, and NewsAPI junk from text."""
     if not text:
         return ""
-    # Remove HTML tags
     text = re.sub(r'<[^>]+>', ' ', text)
-    # Remove HTML entities like &amp; &nbsp; etc
     text = re.sub(r'&[a-zA-Z]+;', ' ', text)
-    # Remove NewsAPI truncation marker like [+245 chars]
     text = re.sub(r'\[\+\d+\s*chars?\]', '', text)
-    # Collapse whitespace
     text = ' '.join(text.split())
     return text.strip()
 
@@ -44,34 +38,31 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# 🎨  CUSTOM CSS  (dark cyber aesthetic)
+# 🎨  CUSTOM CSS
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=Share+Tech+Mono&display=swap');
 
-/* ── ROOT VARIABLES ── */
 :root {
     --bg-main:    #050a14;
     --bg-card:    #0b1422;
     --bg-glass:   rgba(11, 20, 34, 0.85);
-    --accent-1:   #00e5ff;   /* electric cyan */
-    --accent-2:   #ff4b4b;   /* danger red */
-    --accent-3:   #39ff14;   /* neon green */
-    --accent-4:   #ffd700;   /* gold */
+    --accent-1:   #00e5ff;
+    --accent-2:   #ff4b4b;
+    --accent-3:   #39ff14;
+    --accent-4:   #ffd700;
     --text-main:  #e0eaff;
     --text-dim:   #7090b0;
     --border:     rgba(0, 229, 255, 0.18);
 }
 
-/* ── GLOBAL ── */
 html, body, [class*="css"] {
     font-family: 'Rajdhani', 'Noto Sans Devanagari', sans-serif;
     background-color: var(--bg-main) !important;
     color: var(--text-main) !important;
 }
 
-/* Animated grid background */
 .stApp {
     background:
         linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
@@ -82,7 +73,6 @@ html, body, [class*="css"] {
     background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100%, 100% 100%;
 }
 
-/* ── HEADER ── */
 .cyber-header {
     text-align: center;
     padding: 2rem 0 1rem;
@@ -118,7 +108,6 @@ html, body, [class*="css"] {
     border-radius: 2px;
 }
 
-/* ── METRIC CARDS ── */
 .metric-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -167,7 +156,6 @@ html, body, [class*="css"] {
     text-transform: uppercase;
 }
 
-/* ── NEWS CARD ── */
 .news-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -225,7 +213,6 @@ html, body, [class*="css"] {
 .badge-cyan   { background: rgba(0,229,255,0.12);  color: var(--accent-1); border: 1px solid rgba(0,229,255,0.3); }
 .badge-gold   { background: rgba(255,215,0,0.12);  color: var(--accent-4); border: 1px solid rgba(255,215,0,0.3); }
 
-/* ── SIDEBAR ── */
 section[data-testid="stSidebar"] {
     background: rgba(5,10,20,0.95) !important;
     border-right: 1px solid var(--border) !important;
@@ -243,7 +230,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     color: var(--text-main) !important;
 }
 
-/* ── TABS ── */
 .stTabs [data-baseweb="tab-list"] {
     background: var(--bg-card) !important;
     border-radius: 12px !important;
@@ -272,7 +258,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     padding-top: 1.5rem !important;
 }
 
-/* ── BUTTONS ── */
 .stButton > button {
     background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(0,229,255,0.05)) !important;
     border: 1px solid rgba(0,229,255,0.4) !important;
@@ -289,7 +274,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     transform: translateY(-1px) !important;
 }
 
-/* ── EXPANDER ── */
 .streamlit-expanderHeader {
     background: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
@@ -298,18 +282,15 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     font-family: 'Rajdhani', sans-serif !important;
 }
 
-/* ── SPINNER ── */
 .stSpinner > div {
     border-top-color: var(--accent-1) !important;
 }
 
-/* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-1); }
 
-/* ── AI SUMMARY BOX ── */
 .ai-box {
     background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(255,75,75,0.06));
     border: 1px solid rgba(0,229,255,0.25);
@@ -333,7 +314,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     gap: 0.5rem;
 }
 
-/* ── DISTRICT PILLS ── */
 .district-pills {
     display: flex;
     flex-wrap: wrap;
@@ -351,7 +331,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     letter-spacing: 0.5px;
 }
 
-/* ── ALERT BOX ── */
 .alert-box {
     background: rgba(255,75,75,0.1);
     border: 1px solid rgba(255,75,75,0.3);
@@ -367,7 +346,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     margin-bottom: 0.4rem;
 }
 
-/* ── LIVE TICKER ── */
 .ticker-wrap {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -398,7 +376,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     text-overflow: ellipsis;
 }
 
-/* hide streamlit branding */
 #MainMenu, footer, header { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
@@ -408,7 +385,6 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
 # ─────────────────────────────────────────────
 
 def fetch_news(api_key: str, district: str = "Uttar Pradesh") -> list:
-    """Fetch news from NewsAPI (free tier)."""
     if not api_key or api_key == "YOUR_NEWSAPI_KEY":
         return []
     query = f"cyber crime {district}"
@@ -430,7 +406,6 @@ def fetch_news(api_key: str, district: str = "Uttar Pradesh") -> list:
 
 
 def groq_summarize(api_key: str, text: str, lang: str = "Hindi") -> str:
-    """Summarize & translate using Groq (free tier – llama3)."""
     if not api_key or api_key == "YOUR_GROQ_API_KEY":
         return "⚠️ Groq API key configure karein sidebar mein."
     headers = {
@@ -461,7 +436,6 @@ def groq_summarize(api_key: str, text: str, lang: str = "Hindi") -> str:
 
 
 def groq_generate_post(api_key: str, news_title: str, post_type: str) -> str:
-    """Generate awareness social media post."""
     if not api_key or api_key == "YOUR_GROQ_API_KEY":
         return "⚠️ Groq API key configure karein."
     headers = {
@@ -507,7 +481,7 @@ def classify_article(title: str, description: str) -> str:
 
 
 # ─────────────────────────────────────────────
-# 📊  DEMO / FALLBACK DATA
+# 📊  DEMO DATA
 # ─────────────────────────────────────────────
 DEMO_NEWS = [
     {"title": "Lucknow: OTP Fraud Gang Busted — 12 Arrested by UP Cyber Cell",
@@ -534,7 +508,7 @@ DEMO_NEWS = [
      "description": "Gorakhpur में bank customers को fake KYC update SMS भेजे जा रहे हैं। UP Cyber Cell ने alert जारी किया — किसी भी link पर click न करें, Helpline 1930 पर call करें।",
      "source": "Amar Ujala", "publishedAt": "2026-04-12", "url": "#",
      "district": "Gorakhpur", "type": "negative"},
-    {"title": "Prayagraj: Digital Arrest Awareness Campaign — 'Ruko, Sोचो, Report Karo'",
+    {"title": "Prayagraj: Digital Arrest Awareness Campaign — 'Ruko, Socho, Report Karo'",
      "description": "Prayagraj Police ने 'Ruko, Socho, Report Karo' नाम से digital arrest awareness campaign शुरू किया। Rickshaw, auto, और bus stands पर posters लगाए गए।",
      "source": "Prayagraj Police", "publishedAt": "2026-04-11", "url": "#",
      "district": "Prayagraj", "type": "awareness"},
@@ -567,6 +541,10 @@ if "news_api_key" not in st.session_state:
 if "groq_api_key" not in st.session_state:
     st.session_state["groq_api_key"] = ""
 
+# AI summary results store — tab+title key se store karo
+if "ai_summaries" not in st.session_state:
+    st.session_state["ai_summaries"] = {}
+
 # ─────────────────────────────────────────────
 # 🗂️  SIDEBAR
 # ─────────────────────────────────────────────
@@ -579,7 +557,6 @@ with st.sidebar:
     <hr style='border-color:rgba(0,229,255,0.15); margin:0.5rem 0 1.2rem;'>
     """, unsafe_allow_html=True)
 
-    # Auto-load from Streamlit Secrets if available
     _secret_news = get_secret("NEWS_API_KEY")
     _secret_groq = get_secret("GROQ_API_KEY")
     if _secret_news and not st.session_state["news_api_key"]:
@@ -587,7 +564,6 @@ with st.sidebar:
     if _secret_groq and not st.session_state["groq_api_key"]:
         st.session_state["groq_api_key"] = _secret_groq
 
-    # Show green tick if key loaded from secrets
     news_from_secret = bool(_secret_news)
     groq_from_secret = bool(_secret_groq)
 
@@ -604,7 +580,6 @@ with st.sidebar:
         st.text_input("Groq API Key (Free)", key="groq_api_key", type="password",
                       help="console.groq.com पर free account बनाएँ", placeholder="gsk_xxxxxxxxxxxx")
 
-    # ✅ Global variables — always fresh from session_state
     news_api_key = st.session_state.get("news_api_key", "")
     groq_api_key = st.session_state.get("groq_api_key", "")
 
@@ -639,7 +614,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── LIVE TICKER ──
 ticker_items = " &nbsp;●&nbsp; ".join([n["title"][:60] + "…" for n in DEMO_NEWS[:5]])
 st.markdown(f"""
 <div class="ticker-wrap">
@@ -648,7 +622,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ── METRIC CARDS ──
 neg_count = sum(1 for n in DEMO_NEWS if n["type"] == "negative")
 pos_count = sum(1 for n in DEMO_NEWS if n["type"] == "positive")
 aw_count  = sum(1 for n in DEMO_NEWS if n["type"] == "awareness")
@@ -675,19 +648,10 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# 🗂️  MAIN TABS
+# 📰  DATA + FILTER
 # ─────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📰 Latest News",
-    "🔴 Fraud Cases",
-    "🟢 Police Action",
-    "📢 Awareness",
-    "🤖 AI Post Generator",
-    "ℹ️ Cyber Tips"
-])
-
-# ── Decide data source ──
 articles = DEMO_NEWS.copy()
+
 if fetch_live and news_api_key:
     with st.spinner("Fetching live news..."):
         district_q = selected_district if selected_district != "सभी जिले" else "Uttar Pradesh"
@@ -707,39 +671,48 @@ if fetch_live and news_api_key:
             ]
             st.success(f"✅ {len(articles)} live articles loaded!")
 
-# ── Filter ──
 filtered = articles
 if selected_district != "सभी जिले":
-    filtered = [a for a in filtered if selected_district.lower() in a.get("district","").lower()
-                or selected_district.lower() in (a.get("title","") + a.get("description","")).lower()]
+    filtered = [a for a in filtered if
+                selected_district.lower() in a.get("district", "").lower() or
+                selected_district.lower() in (a.get("title","") + a.get("description","")).lower()]
 type_map = {"🔴 Negative Cases": "negative", "🟢 Positive Actions": "positive", "🟡 Awareness": "awareness"}
 if selected_type != "सभी":
     filtered = [a for a in filtered if a.get("type") == type_map.get(selected_type, "")]
 
-
-def render_news_card(article, show_ai=False):
+# ─────────────────────────────────────────────
+# 🃏  NEWS CARD RENDERER
+# ✅ FIX: tab_prefix parameter added — duplicate key error solved
+# ─────────────────────────────────────────────
+def render_news_card(article: dict, show_ai: bool = False, tab_prefix: str = "default", card_index: int = 0):
     a_type = article.get("type", "awareness")
-    badge_map = {"negative": ("badge-red", "⚠️ FRAUD"), "positive": ("badge-green", "✅ ACTION"), "awareness": ("badge-gold", "📢 AWARENESS")}
+    badge_map = {
+        "negative": ("badge-red",   "⚠️ FRAUD"),
+        "positive": ("badge-green", "✅ ACTION"),
+        "awareness":("badge-gold",  "📢 AWARENESS"),
+    }
     badge_cls, badge_txt = badge_map.get(a_type, ("badge-cyan", "📰 NEWS"))
     district_tag = article.get("district", "UP")
-    date_str = article.get("publishedAt", "")[:10]
-    source = article.get("source", "")
-    url = article.get("url", "#")
-    link_html = f'<a href="{url}" target="_blank" style="color:#00e5ff; text-decoration:none; font-size:0.78rem;">🔗 Read More</a>' if url != "#" else ""
+    date_str     = article.get("publishedAt", "")[:10]
+    source       = article.get("source", "")
+    url          = article.get("url", "#")
+    link_html    = (
+        f'<a href="{url}" target="_blank" style="color:#00e5ff;'
+        f' text-decoration:none; font-size:0.78rem;">🔗 Read More</a>'
+        if url != "#" else ""
+    )
 
-    # ✅ Clean title and description — strip all HTML tags
-    title_clean = clean_text(article.get('title', ''))
-    desc_raw    = article.get('description', '') or article.get('content', '') or ''
+    title_clean = clean_text(article.get("title", ""))
+    desc_raw    = article.get("description", "") or article.get("content", "") or ""
     desc_clean  = clean_text(desc_raw)
-    desc_show   = desc_clean[:300] + ('…' if len(desc_clean) > 300 else '')
-
-    # If description is empty after cleaning, show a helpful fallback
+    desc_show   = desc_clean[:300] + ("…" if len(desc_clean) > 300 else "")
     if not desc_show.strip():
         desc_show = "विस्तृत जानकारी के लिए 'Read More' पर click करें।"
 
     st.markdown(f"""
     <div class="news-card {a_type}">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;
+                    flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
             <span class="badge {badge_cls}">{badge_txt}</span>
             <span class="badge badge-cyan">📍 {district_tag}</span>
         </div>
@@ -753,32 +726,64 @@ def render_news_card(article, show_ai=False):
     </div>
     """, unsafe_allow_html=True)
 
-    if show_ai and groq_api_key:
-        if st.button(f"🤖 AI Hindi Summary", key=f"sum_{hash(article['title'])}"):
-            with st.spinner("AI summarizing..."):
-                summary = groq_summarize(groq_api_key, article["title"] + " " + article.get("description",""))
+    if show_ai:
+        # ✅ UNIQUE KEY: tab_prefix + card_index — kabhi duplicate nahi hoga
+        btn_key     = f"ai_btn_{tab_prefix}_{card_index}"
+        summary_key = f"ai_sum_{tab_prefix}_{card_index}"
+
+        if st.button("🤖 AI Hindi Summary", key=btn_key):
+            if not groq_api_key:
+                st.warning("⚠️ Sidebar में Groq API key डालें।")
+            else:
+                with st.spinner("AI summarizing..."):
+                    summary = groq_summarize(
+                        groq_api_key,
+                        title_clean + " " + article.get("description", "")
+                    )
+                st.session_state["ai_summaries"][summary_key] = summary
+
+        # Summary already generated hai toh show karo
+        if summary_key in st.session_state["ai_summaries"]:
             st.markdown(f"""
             <div class="ai-box">
                 <div class="ai-box-title">🤖 AI SUMMARY (Hindi)</div>
-                {summary}
+                {st.session_state["ai_summaries"][summary_key]}
             </div>
             """, unsafe_allow_html=True)
 
 
+# ─────────────────────────────────────────────
+# 🗂️  MAIN TABS
+# ─────────────────────────────────────────────
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📰 Latest News",
+    "🔴 Fraud Cases",
+    "🟢 Police Action",
+    "📢 Awareness",
+    "🤖 AI Post Generator",
+    "ℹ️ Cyber Tips"
+])
+
 # ── TAB 1: ALL NEWS ──
 with tab1:
-    st.markdown(f"### 📰 सभी ताज़ा खबरें &nbsp; <span style='font-size:0.8rem; color:#7090b0;'>({len(filtered)} articles)</span>", unsafe_allow_html=True)
+    st.markdown(
+        f"### 📰 सभी ताज़ा खबरें &nbsp;"
+        f"<span style='font-size:0.8rem; color:#7090b0;'>({len(filtered)} articles)</span>",
+        unsafe_allow_html=True
+    )
     if not filtered:
         st.info("कोई article नहीं मिला। Filter बदलें या Live Fetch करें।")
-    for art in filtered[:10]:
-        render_news_card(art, show_ai=True)
+    for idx, art in enumerate(filtered[:10]):
+        render_news_card(art, show_ai=True, tab_prefix="tab1", card_index=idx)
 
 # ── TAB 2: FRAUD CASES ──
 with tab2:
     neg_articles = [a for a in filtered if a.get("type") == "negative"]
-    st.markdown(f"### ⚠️ Fraud & Cyber Crime Cases &nbsp; <span style='font-size:0.8rem; color:#7090b0;'>({len(neg_articles)} cases)</span>", unsafe_allow_html=True)
-
-    # Alert box
+    st.markdown(
+        f"### ⚠️ Fraud & Cyber Crime Cases &nbsp;"
+        f"<span style='font-size:0.8rem; color:#7090b0;'>({len(neg_articles)} cases)</span>",
+        unsafe_allow_html=True
+    )
     st.markdown("""
     <div class="alert-box">
         <div class="alert-title">🚨 ACTIVE ALERTS — UP Cyber Cell</div>
@@ -789,52 +794,69 @@ with tab2:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
     if not neg_articles:
         st.success("✅ आपके filter में कोई fraud case नहीं मिला!")
-    for art in neg_articles:
-        render_news_card(art, show_ai=True)
+    for idx, art in enumerate(neg_articles):
+        render_news_card(art, show_ai=True, tab_prefix="tab2", card_index=idx)
 
 # ── TAB 3: POSITIVE ACTIONS ──
 with tab3:
     pos_articles = [a for a in filtered if a.get("type") == "positive"]
-    st.markdown(f"### ✅ Police Actions & Success Stories &nbsp; <span style='font-size:0.8rem; color:#7090b0;'>({len(pos_articles)} stories)</span>", unsafe_allow_html=True)
-
+    st.markdown(
+        f"### ✅ Police Actions & Success Stories &nbsp;"
+        f"<span style='font-size:0.8rem; color:#7090b0;'>({len(pos_articles)} stories)</span>",
+        unsafe_allow_html=True
+    )
     st.markdown("""
-    <div style='background:rgba(57,255,20,0.07); border:1px solid rgba(57,255,20,0.2); border-radius:10px; padding:1rem 1.2rem; margin-bottom:1rem;'>
-        <div style='color:#39ff14; font-family:"Share Tech Mono",monospace; font-size:0.8rem; letter-spacing:2px; margin-bottom:0.5rem;'>📊 UP CYBER CELL — APRIL 2026 STATS</div>
+    <div style='background:rgba(57,255,20,0.07); border:1px solid rgba(57,255,20,0.2);
+                border-radius:10px; padding:1rem 1.2rem; margin-bottom:1rem;'>
+        <div style='color:#39ff14; font-family:"Share Tech Mono",monospace; font-size:0.8rem;
+                    letter-spacing:2px; margin-bottom:0.5rem;'>📊 UP CYBER CELL — APRIL 2026 STATS</div>
         <div style='display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; font-family:"Rajdhani",sans-serif;'>
-            <div style='text-align:center;'><div style='font-size:1.8rem; color:#39ff14; font-family:"Share Tech Mono",monospace;'>₹4.2Cr</div><div style='font-size:0.75rem; color:#7090b0;'>Recovered</div></div>
-            <div style='text-align:center;'><div style='font-size:1.8rem; color:#39ff14; font-family:"Share Tech Mono",monospace;'>156</div><div style='font-size:0.75rem; color:#7090b0;'>Arrests</div></div>
-            <div style='text-align:center;'><div style='font-size:1.8rem; color:#39ff14; font-family:"Share Tech Mono",monospace;'>892</div><div style='font-size:0.75rem; color:#7090b0;'>Cases Closed</div></div>
+            <div style='text-align:center;'>
+                <div style='font-size:1.8rem; color:#39ff14; font-family:"Share Tech Mono",monospace;'>₹4.2Cr</div>
+                <div style='font-size:0.75rem; color:#7090b0;'>Recovered</div>
+            </div>
+            <div style='text-align:center;'>
+                <div style='font-size:1.8rem; color:#39ff14; font-family:"Share Tech Mono",monospace;'>156</div>
+                <div style='font-size:0.75rem; color:#7090b0;'>Arrests</div>
+            </div>
+            <div style='text-align:center;'>
+                <div style='font-size:1.8rem; color:#39ff14; font-family:"Share Tech Mono",monospace;'>892</div>
+                <div style='font-size:0.75rem; color:#7090b0;'>Cases Closed</div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-
     if not pos_articles:
         st.info("Filter बदलें।")
-    for art in pos_articles:
-        render_news_card(art, show_ai=True)
+    for idx, art in enumerate(pos_articles):
+        render_news_card(art, show_ai=True, tab_prefix="tab3", card_index=idx)
 
 # ── TAB 4: AWARENESS CAMPAIGNS ──
 with tab4:
     aw_articles = [a for a in filtered if a.get("type") == "awareness"]
-    st.markdown(f"### 📢 Awareness Campaigns &nbsp; <span style='font-size:0.8rem; color:#7090b0;'>({len(aw_articles)} campaigns)</span>", unsafe_allow_html=True)
-
+    st.markdown(
+        f"### 📢 Awareness Campaigns &nbsp;"
+        f"<span style='font-size:0.8rem; color:#7090b0;'>({len(aw_articles)} campaigns)</span>",
+        unsafe_allow_html=True
+    )
     districts_str = " ".join([f'<span class="district-pill">{d}</span>' for d in UP_DISTRICTS])
     st.markdown(f'<div class="district-pills">{districts_str}</div>', unsafe_allow_html=True)
-
     if not aw_articles:
         st.info("Filter बदलें।")
-    for art in aw_articles:
-        render_news_card(art, show_ai=True)
+    for idx, art in enumerate(aw_articles):
+        render_news_card(art, show_ai=True, tab_prefix="tab4", card_index=idx)
 
 # ── TAB 5: AI POST GENERATOR ──
 with tab5:
     st.markdown("### 🤖 AI-Powered Social Media Post Generator")
     st.markdown("""
-    <div style='background:rgba(0,229,255,0.06); border:1px solid rgba(0,229,255,0.2); border-radius:10px; padding:1rem; margin-bottom:1rem; font-size:0.85rem; color:#a0b8d0; font-family:"Noto Sans Devanagari",sans-serif;'>
-    Groq API (Free) की मदद से cyber crime awareness के लिए X/Twitter, Facebook, या Instagram posts तुरंत generate करें।
+    <div style='background:rgba(0,229,255,0.06); border:1px solid rgba(0,229,255,0.2);
+                border-radius:10px; padding:1rem; margin-bottom:1rem; font-size:0.85rem;
+                color:#a0b8d0; font-family:"Noto Sans Devanagari",sans-serif;'>
+    Groq API (Free) की मदद से cyber crime awareness के लिए X/Twitter, Facebook, या Instagram
+    posts तुरंत generate करें।
     </div>
     """, unsafe_allow_html=True)
 
@@ -847,20 +869,16 @@ with tab5:
         )
     with col2:
         post_platform = st.selectbox("Platform", ["Twitter/X", "Facebook", "Instagram", "WhatsApp"])
-        post_tone = st.selectbox("Tone", ["Urgent Warning ⚠️", "Informative 📊", "Motivational 👏", "Helpful Tips 💡"])
+        post_tone     = st.selectbox("Tone", ["Urgent Warning ⚠️", "Informative 📊", "Motivational 👏", "Helpful Tips 💡"])
 
-    if st.button("⚡ Generate Post", use_container_width=True):
+    if st.button("⚡ Generate Post", key="gen_post_main", use_container_width=True):
         if not post_topic:
             st.warning("Topic डालें।")
         elif not groq_api_key:
             st.error("Sidebar में Groq API key डालें।")
         else:
             with st.spinner("AI post likh raha hai..."):
-                post = groq_generate_post(
-                    groq_api_key,
-                    post_topic,
-                    f"{post_platform} {post_tone}"
-                )
+                post = groq_generate_post(groq_api_key, post_topic, f"{post_platform} {post_tone}")
             st.markdown(f"""
             <div class="ai-box">
                 <div class="ai-box-title">✨ GENERATED POST — {post_platform.upper()}</div>
@@ -871,24 +889,35 @@ with tab5:
 
     st.markdown("---")
     st.markdown("#### 🔁 Quick Generate from Latest News")
-    for art in filtered[:4]:
+    for i, art in enumerate(filtered[:4]):
         c1, c2 = st.columns([4, 1])
         with c1:
-            st.markdown(f"<div style='font-size:0.85rem; color:#a0b8d0; padding:0.3rem 0;'>📰 {art['title'][:80]}…</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='font-size:0.85rem; color:#a0b8d0; padding:0.3rem 0;'>"
+                f"📰 {art['title'][:80]}…</div>",
+                unsafe_allow_html=True
+            )
         with c2:
-            if st.button("⚡ Post", key=f"post_{hash(art['title'])}"):
+            # ✅ UNIQUE KEY: tab5_quick_ + index
+            if st.button("⚡ Post", key=f"tab5_quick_{i}"):
                 with st.spinner("Generating..."):
                     p = groq_generate_post(groq_api_key, art["title"], "Twitter awareness")
-                st.markdown(f'<div class="ai-box"><div class="ai-box-title">✨ POST</div>{p}</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="ai-box"><div class="ai-box-title">✨ POST</div>{p}</div>',
+                    unsafe_allow_html=True
+                )
 
 # ── TAB 6: CYBER TIPS ──
 with tab6:
     st.markdown("### 🛡️ Cyber Safety Tips — उत्तर प्रदेश")
     st.markdown("""
-    <div style='background:rgba(255,215,0,0.07); border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.5rem;'>
-        <div style='color:#ffd700; font-family:"Share Tech Mono",monospace; font-size:0.8rem; letter-spacing:2px; margin-bottom:0.5rem;'>⚡ REMEMBER</div>
+    <div style='background:rgba(255,215,0,0.07); border:1px solid rgba(255,215,0,0.2);
+                border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.5rem;'>
+        <div style='color:#ffd700; font-family:"Share Tech Mono",monospace; font-size:0.8rem;
+                    letter-spacing:2px; margin-bottom:0.5rem;'>⚡ REMEMBER</div>
         <div style='color:#e0eaff; font-family:"Noto Sans Devanagari",sans-serif; font-size:1rem; line-height:1.8;'>
-        🆘 Cyber Fraud हो तो: <b style='color:#ff4b4b; font-size:1.2rem;'>1930</b> पर call करें | <b>cybercrime.gov.in</b> पर report करें
+        🆘 Cyber Fraud हो तो: <b style='color:#ff4b4b; font-size:1.2rem;'>1930</b> पर call करें |
+        <b>cybercrime.gov.in</b> पर report करें
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -897,10 +926,13 @@ with tab6:
     for i, (title, desc, icon) in enumerate(AWARENESS_TIPS):
         with cols[i % 2]:
             st.markdown(f"""
-            <div style='background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:1.2rem; margin-bottom:1rem; transition:all 0.2s;'>
+            <div style='background:var(--bg-card); border:1px solid var(--border);
+                        border-radius:10px; padding:1.2rem; margin-bottom:1rem; transition:all 0.2s;'>
                 <div style='font-size:2rem; margin-bottom:0.5rem;'>{icon}</div>
-                <div style='color:#00e5ff; font-family:"Rajdhani",sans-serif; font-weight:700; font-size:1rem; margin-bottom:0.4rem;'>{title}</div>
-                <div style='color:#a0b8d0; font-family:"Noto Sans Devanagari",sans-serif; font-size:0.85rem; line-height:1.6;'>{desc}</div>
+                <div style='color:#00e5ff; font-family:"Rajdhani",sans-serif; font-weight:700;
+                            font-size:1rem; margin-bottom:0.4rem;'>{title}</div>
+                <div style='color:#a0b8d0; font-family:"Noto Sans Devanagari",sans-serif;
+                            font-size:0.85rem; line-height:1.6;'>{desc}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -908,9 +940,13 @@ with tab6:
 # 🔽  FOOTER
 # ─────────────────────────────────────────────
 st.markdown(f"""
-<div style='text-align:center; padding:2rem 0 1rem; margin-top:3rem; border-top:1px solid rgba(0,229,255,0.1);'>
+<div style='text-align:center; padding:2rem 0 1rem; margin-top:3rem;
+            border-top:1px solid rgba(0,229,255,0.1);'>
     <div style='font-family:"Share Tech Mono",monospace; color:#3a5a7a; font-size:0.7rem; letter-spacing:3px;'>
-    UP CYBER SHIELD DASHBOARD &nbsp;|&nbsp; LAST UPDATE: {datetime.now().strftime("%d %b %Y %H:%M")} &nbsp;|&nbsp; HELPLINE: 1930
+    UP CYBER SHIELD DASHBOARD &nbsp;|&nbsp;
+    LAST UPDATE: {datetime.now().strftime("%d %b %Y %H:%M")} &nbsp;|&nbsp;
+    HELPLINE: 1930
     </div>
 </div>
 """, unsafe_allow_html=True)
+
