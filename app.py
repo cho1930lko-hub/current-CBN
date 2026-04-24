@@ -18,7 +18,6 @@ def get_secret(key: str) -> str:
 
 
 def strip_html(text: str) -> str:
-    """Remove ALL html tags and decode entities — returns plain text."""
     if not text:
         return ""
     text = html_lib.unescape(text)
@@ -39,7 +38,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# 🎨  MINIMAL CSS
+# 🎨  CSS
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -83,18 +82,40 @@ html, body, [class*="css"] {
 }
 .ticker b { color:#ff4b4b; font-family:'Share Tech Mono',monospace; font-size:0.7rem; letter-spacing:2px; }
 
+/* ── NEWS CARD ── */
 .news-item {
     border-left:4px solid #00e5ff;
-    padding:0.8rem 1rem; margin-bottom:0.4rem;
-    background:#0b1422; border-radius:0 8px 8px 0;
+    padding:1rem 1.2rem; margin-bottom:0.6rem;
+    background:#0b1422; border-radius:0 10px 10px 0;
 }
 .news-item.neg { border-left-color:#ff4b4b; }
 .news-item.pos { border-left-color:#39ff14; }
 .news-item.aw  { border-left-color:#ffd700; }
-.news-item .ntitle { font-weight:700; font-size:1rem; color:#e0eaff; line-height:1.4; }
-.news-item .nmeta  { font-size:0.72rem; color:#7090b0; margin:0.25rem 0; font-family:'Share Tech Mono',monospace; }
-.news-item .ndesc  { font-family:'Noto Sans Devanagari',sans-serif; font-size:0.88rem; color:#a0b8d0; line-height:1.7; }
+.news-item .ntitle { font-weight:700; font-size:1.05rem; color:#e0eaff; line-height:1.4; }
+.news-item .nmeta  { font-size:0.72rem; color:#7090b0; margin:0.3rem 0; font-family:'Share Tech Mono',monospace; }
+.news-item .ndesc  {
+    font-family:'Noto Sans Devanagari',sans-serif;
+    font-size:0.9rem; color:#c0d0e8; line-height:1.8;
+    margin-top:0.5rem;
+    border-top:1px solid rgba(255,255,255,0.06);
+    padding-top:0.5rem;
+}
+.read-link {
+    display:inline-block;
+    margin-top:0.6rem;
+    padding:0.3rem 0.9rem;
+    background:rgba(0,229,255,0.1);
+    border:1px solid rgba(0,229,255,0.35);
+    border-radius:20px;
+    color:#00e5ff !important;
+    font-size:0.78rem;
+    font-family:'Share Tech Mono',monospace;
+    letter-spacing:1px;
+    text-decoration:none !important;
+}
+.read-link:hover { background:rgba(0,229,255,0.2); }
 
+/* ── AI POST BOX ── */
 .ai-box {
     background:linear-gradient(135deg,rgba(0,229,255,0.07),rgba(255,75,75,0.05));
     border:1px solid rgba(0,229,255,0.22); border-radius:10px;
@@ -102,6 +123,50 @@ html, body, [class*="css"] {
     font-family:'Noto Sans Devanagari',sans-serif;
     font-size:0.9rem; line-height:1.8; color:#e0eaff;
     white-space:pre-wrap;
+}
+
+/* ── GENERATED POST CARD ── */
+.post-card {
+    background: linear-gradient(135deg, #0d1f35, #0a1528);
+    border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    margin: 0.8rem 0;
+    position: relative;
+    overflow: hidden;
+}
+.post-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00e5ff, #ff4b4b, #ffd700, #39ff14);
+}
+.post-card .platform-badge {
+    display: inline-block;
+    background: rgba(0,229,255,0.15);
+    border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 20px;
+    padding: 0.2rem 0.8rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: #00e5ff;
+    letter-spacing: 1px;
+    margin-bottom: 0.8rem;
+}
+.post-card .post-text {
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    font-size: 1rem;
+    line-height: 1.9;
+    color: #e8f0ff;
+    white-space: pre-wrap;
+}
+.post-card .char-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    color: #4a7090;
+    margin-top: 0.8rem;
+    text-align: right;
 }
 
 .tip-card {
@@ -160,7 +225,7 @@ def fetch_news(api_key: str, query: str = "cyber crime Uttar Pradesh") -> list:
         return []
 
 
-def groq_call(api_key: str, prompt: str, max_tokens: int = 350) -> str:
+def groq_call(api_key: str, prompt: str, max_tokens: int = 500) -> str:
     if not api_key:
         return "Groq API key sidebar mein enter karein."
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
@@ -174,7 +239,7 @@ def groq_call(api_key: str, prompt: str, max_tokens: int = 350) -> str:
                     "model": model,
                     "messages": [{"role": "user", "content": prompt}],
                     "max_tokens": max_tokens,
-                    "temperature": 0.4,
+                    "temperature": 0.6,
                 },
                 timeout=25,
             )
@@ -197,16 +262,68 @@ def groq_summarize(api_key: str, text: str) -> str:
     return groq_call(api_key, prompt, max_tokens=300)
 
 
+# ── IMPROVED POST GENERATOR ──
+PLATFORM_RULES = {
+    "Twitter/X": {
+        "limit": "280 characters MAXIMUM. Very short, punchy, 2-3 lines only.",
+        "style": "Twitter post with 1-2 lines of text + hashtags. Ultra concise.",
+        "emojis": "🚨⚠️🔐📵💰🛡️",
+    },
+    "Facebook": {
+        "limit": "300-500 characters. Paragraph format, friendly tone.",
+        "style": "Facebook awareness post — 2 short paragraphs, bullet tips, CTA at end.",
+        "emojis": "🔴🛡️⚠️✅📞💡🙏",
+    },
+    "Instagram": {
+        "limit": "150-250 characters caption + 10-15 hashtags at end.",
+        "style": "Instagram caption — eye-catching first line, 3 emoji bullet tips, hashtag block at end.",
+        "emojis": "🔴🔐💻🛡️⚡✨🚫📵",
+    },
+    "WhatsApp": {
+        "limit": "200-350 characters. Conversational, feels like a friend warning you.",
+        "style": "WhatsApp forward message — starts with bold warning, 3 tips, ends with helpline number.",
+        "emojis": "🚨⛔🔐📞✅👆💬",
+    },
+}
+
+TONE_GUIDE = {
+    "Urgent Warning":   "URGENT, alarming, creates immediate fear/action. Use ALL CAPS for key words.",
+    "Informative":      "Educational, calm, explains HOW the fraud works step by step.",
+    "Motivational":     "Empowering, positive — 'You can protect yourself!' energy.",
+    "Helpful Tips":     "Friendly checklist style — practical do's and don'ts.",
+}
+
 def groq_post(api_key: str, topic: str, platform: str, tone: str) -> str:
-    prompt = (
-        f"UP Police Cyber Cell ke liye {platform} par ek {tone} awareness post likho.\n"
-        f"Vishay: {topic}\n"
-        "Hinglish mein likho (Hindi + thoda English mix).\n"
-        "Shaamil karo: 2-3 safety tips, call-to-action, "
-        "hashtags: #CyberSafety #UPPolice #1930Helpline\n"
-        f"{'Twitter ke liye 280 characters se kam rakho.' if 'Twitter' in platform else ''}"
-    )
-    return groq_call(api_key, prompt, max_tokens=250)
+    p = PLATFORM_RULES.get(platform, PLATFORM_RULES["WhatsApp"])
+    t = TONE_GUIDE.get(tone, TONE_GUIDE["Urgent Warning"])
+
+    prompt = f"""You are a social media expert for UP Police Cyber Cell, India.
+
+Create a {platform} post about: "{topic}"
+
+PLATFORM RULES for {platform}:
+- {p['limit']}
+- Style: {p['style']}
+- Suggested emojis to use (pick relevant ones): {p['emojis']}
+
+TONE: {t}
+
+LANGUAGE: Hindi ONLY (Devanagari script). No English words except: OTP, Cyber, Online, Helpline, FIR, Link, App.
+
+MANDATORY elements to include naturally:
+- Helpline number: 1930
+- Website: cybercrime.gov.in  
+- Relevant hashtags in Hindi context: #CyberSafety #UPPolice #1930Helpline #साइबर_सुरक्षा
+
+FORMAT OUTPUT:
+- Start directly with the post content (no explanation, no "Here is your post:")
+- Make it READY TO COPY AND PASTE
+- Use emojis generously to make it visually attractive
+- Each tip/point on its own line with emoji bullet
+
+Post:"""
+
+    return groq_call(api_key, prompt, max_tokens=500)
 
 
 def classify(title: str, desc: str) -> str:
@@ -225,33 +342,110 @@ def classify(title: str, desc: str) -> str:
 
 
 # ─────────────────────────────────────────────
-# 📊  DEMO DATA  (pure plain text — no HTML)
+# 📊  DEMO DATA
 # ─────────────────────────────────────────────
 DEMO = [
-    {"title": "Lucknow: OTP Fraud Gang Busted — 12 Arrested by UP Cyber Cell",
-     "desc": "UP Police की Cyber Cell ने Lucknow में एक बड़े OTP fraud gang को गिरफ्तार किया। 12 आरोपियों से 45 लाख रुपये की रकम बरामद की गई। पीड़ितों को refund की प्रक्रिया शुरू की गई है।",
-     "source": "Amar Ujala", "date": "2026-04-17", "url": "#", "type": "pos"},
-    {"title": "Kanpur: Online Loan App Scam — 200+ Victims File Complaint",
-     "desc": "Kanpur में fake loan apps के जरिए 200 से अधिक लोगों से ठगी हुई। आरोपियों ने Aadhaar डेटा चुराकर fake CIBIL score दिखाया और मोटी रकम ऐंठ ली। Police जांच जारी है।",
-     "source": "Dainik Jagran", "date": "2026-04-16", "url": "#", "type": "neg"},
-    {"title": "Varanasi: Cyber Safety Workshop in 50 Schools — 10,000 Students Trained",
-     "desc": "Varanasi Police ने 50 schools में Cyber Safety Workshop आयोजित की। 10,000 से अधिक students को digital fraud, phishing और social media safety के बारे में जागरूक किया गया।",
-     "source": "Hindustan Times", "date": "2026-04-15", "url": "#", "type": "aw"},
-    {"title": "Noida: Fake Job Portal Scam — IT Professionals Targeted",
-     "desc": "Noida में एक fake job portal ने IT professionals से 15,000 से 50,000 रुपये registration fee ली। 85 शिकायतें दर्ज हुईं। Cybercrime portal पर FIR filed की गई।",
-     "source": "Times of India UP", "date": "2026-04-14", "url": "#", "type": "neg"},
-    {"title": "Agra: Cyber Cell Recovers Rs 32 Lakh for Senior Citizen Fraud Victim",
-     "desc": "Agra के 68 वर्षीय senior citizen से 32 लाख रुपये की digital arrest fraud हुई थी। UP Cyber Cell ने तत्परता से action लेकर पूरी रकम वापस दिलाई। यह UP Cyber Cell की बड़ी उपलब्धि है।",
-     "source": "UP Police Official", "date": "2026-04-13", "url": "#", "type": "pos"},
-    {"title": "Gorakhpur: Phishing SMS Campaign Targets Bank Customers",
-     "desc": "Gorakhpur में bank customers को fake KYC update SMS भेजे जा रहे हैं। UP Cyber Cell ने alert जारी किया है। किसी भी link पर click न करें और Helpline 1930 पर call करें।",
-     "source": "Amar Ujala", "date": "2026-04-12", "url": "#", "type": "neg"},
-    {"title": "Prayagraj: Digital Arrest Campaign — Ruko Socho Report Karo",
-     "desc": "Prayagraj Police ने Ruko, Socho, Report Karo नाम से digital arrest awareness campaign शुरू किया। Rickshaw, auto, और bus stands पर जागरूकता posters लगाए गए हैं।",
-     "source": "Prayagraj Police", "date": "2026-04-11", "url": "#", "type": "aw"},
-    {"title": "Meerut: Cryptocurrency Fraud — Rs 1.2 Crore Scam Exposed",
-     "desc": "Meerut में एक fake crypto trading platform ने investors से 1.2 crore रुपये ठगे। 3 accused arrested किए गए और 6 bank accounts में funds freeze किए गए।",
-     "source": "Dainik Jagran", "date": "2026-04-10", "url": "#", "type": "neg"},
+    {
+        "title": "Lucknow: OTP Fraud Gang Busted — 12 Arrested by UP Cyber Cell",
+        "desc": (
+            "UP Police की Cyber Cell ने Lucknow में एक बड़े OTP fraud gang का पर्दाफाश किया है। "
+            "इस गैंग के 12 सदस्यों को गिरफ्तार किया गया, जो पिछले 2 वर्षों से सक्रिय थे। "
+            "आरोपी खुद को बैंक अधिकारी बताकर पीड़ितों से OTP मांगते थे और उनके खाते खाली कर देते थे। "
+            "45 लाख रुपये नकद, 18 मोबाइल फोन, और 6 SIM card cloning devices बरामद हुईं। "
+            "अब तक 200 से अधिक शिकायतें इस गैंग से जुड़ी हैं। पीड़ितों को रकम refund की प्रक्रिया शुरू की गई।"
+        ),
+        "source": "Amar Ujala", "date": "2026-04-17",
+        "url": "https://www.amarujala.com", "type": "pos"
+    },
+    {
+        "title": "Kanpur: Online Loan App Scam — 200+ Victims File Complaint",
+        "desc": (
+            "Kanpur में fake loan apps के जरिए 200 से अधिक लोगों से ठगी का मामला सामने आया है। "
+            "आरोपियों ने Play Store पर नकली lending app upload की थी जो असली दिखती थी। "
+            "App install करते ही contacts और gallery का access ले लिया जाता था। "
+            "फिर fake CIBIL score दिखाकर 50,000 से 2 लाख तक का loan देने का झांसा दिया जाता था। "
+            "Processing fee के नाम पर 5,000 से 20,000 रुपये ऐंठे जाते थे और बाद में blackmail किया जाता था। "
+            "पुलिस ने मुख्य आरोपी दिल्ली से गिरफ्तार किया, जांच जारी है।"
+        ),
+        "source": "Dainik Jagran", "date": "2026-04-16",
+        "url": "https://www.jagran.com", "type": "neg"
+    },
+    {
+        "title": "Varanasi: Cyber Safety Workshop in 50 Schools — 10,000 Students Trained",
+        "desc": (
+            "Varanasi Police ने 'Safe Digital Bharat' अभियान के तहत 50 schools में Cyber Safety Workshop आयोजित की। "
+            "10,000 से अधिक students को digital fraud, phishing, social media safety और online gaming addiction के बारे में जागरूक किया गया। "
+            "विशेष रूप से class 8 से 12 के बच्चों को target किया गया क्योंकि वे social media पर सबसे अधिक active हैं। "
+            "Workshop में fake profiles पहचानना, password security और cyber bullying से बचाव सिखाया गया। "
+            "अगले 3 महीनों में 100 और schools को cover करने की योजना है।"
+        ),
+        "source": "Hindustan Times", "date": "2026-04-15",
+        "url": "https://www.hindustantimes.com", "type": "aw"
+    },
+    {
+        "title": "Noida: Fake Job Portal Scam — IT Professionals Targeted",
+        "desc": (
+            "Noida में एक fake job portal 'TechHire India' ने IT professionals को निशाना बनाया। "
+            "LinkedIn जैसी दिखने वाली इस website पर MNCs के नाम से fake job listings डाली गईं। "
+            "Interview के बाद 'selection' letter भेजकर 15,000 से 50,000 रुपये registration fee माँगी जाती थी। "
+            "85 शिकायतें दर्ज हुईं, कुल नुकसान 28 लाख रुपये से अधिक। "
+            "Cybercrime portal पर FIR filed की गई, 2 servers Maharashtra से trace किए गए। "
+            "पुलिस ने alert जारी करते हुए कहा कि कोई genuine company advance fee नहीं माँगती।"
+        ),
+        "source": "Times of India UP", "date": "2026-04-14",
+        "url": "https://timesofindia.indiatimes.com", "type": "neg"
+    },
+    {
+        "title": "Agra: Cyber Cell Recovers Rs 32 Lakh for Senior Citizen Fraud Victim",
+        "desc": (
+            "Agra के 68 वर्षीय retired teacher श्री रामप्रसाद वर्मा को digital arrest fraud का शिकार बनाया गया था। "
+            "आरोपियों ने CBI officer बनकर video call की और कहा कि उनके account से money laundering हो रही है। "
+            "डर के कारण उन्होंने 32 लाख रुपये अलग-अलग accounts में transfer कर दिए। "
+            "परिवार ने 24 घंटे के भीतर 1930 पर complaint की। "
+            "UP Cyber Cell ने तत्परता से action लेकर सभी transactions freeze कराईं और पूरी 32 लाख रुपये की रकम वापस दिलाई। "
+            "यह UP Cyber Cell की 2026 की सबसे बड़ी recovery है।"
+        ),
+        "source": "UP Police Official", "date": "2026-04-13",
+        "url": "https://uppolice.gov.in", "type": "pos"
+    },
+    {
+        "title": "Gorakhpur: Phishing SMS Campaign Targets Bank Customers",
+        "desc": (
+            "Gorakhpur और आसपास के जिलों में bank customers को fake KYC update SMS भेजे जा रहे हैं। "
+            "SMS में लिखा होता है: 'आपका account 24 घंटे में बंद हो जाएगा, यहाँ click करें।' "
+            "Link पर click करने पर एक fake bank website खुलती है जो बिल्कुल असली जैसी दिखती है। "
+            "वहाँ login details और OTP enter करते ही account empty हो जाता है। "
+            "अब तक 45 लोग इसके शिकार हो चुके हैं, कुल नुकसान 18 लाख रुपये। "
+            "UP Cyber Cell ने alert जारी किया: Bank कभी SMS पर link नहीं भेजता। Helpline 1930 पर call करें।"
+        ),
+        "source": "Amar Ujala", "date": "2026-04-12",
+        "url": "https://www.amarujala.com", "type": "neg"
+    },
+    {
+        "title": "Prayagraj: Digital Arrest Campaign — 'Ruko Socho Report Karo'",
+        "desc": (
+            "Prayagraj Police ने 'रुको, सोचो, Report करो' नाम से एक बड़ा digital arrest awareness campaign शुरू किया है। "
+            "इस campaign में 500 से अधिक rickshaw, auto और bus stands पर जागरूकता posters लगाए गए हैं। "
+            "साथ ही local cable TV पर short awareness videos चलाई जा रही हैं। "
+            "Mohalla-level पर volunteers को trained किया गया है जो घर-घर जाकर senior citizens को समझाते हैं। "
+            "Campaign का focus है: CBI/ED/Police कभी video call पर arrest नहीं करती, घबराएँ नहीं, पहले 1930 call करें।"
+        ),
+        "source": "Prayagraj Police", "date": "2026-04-11",
+        "url": "https://uppolice.gov.in", "type": "aw"
+    },
+    {
+        "title": "Meerut: Cryptocurrency Fraud — Rs 1.2 Crore Scam Exposed",
+        "desc": (
+            "Meerut में एक fake crypto trading platform 'CryptoGainIndia' ने investors से 1.2 crore रुपये ठगे। "
+            "Platform पर पहले छोटा investment डलवाया जाता था और fake profit दिखाया जाता था। "
+            "जब बड़ा amount invest होता था तो platform 'maintenance mode' में चला जाता था। "
+            "32 investors ने 1.5 लाख से 8 लाख तक invest किए थे। "
+            "Cyber Cell ने 3 accused arrest किए — दो Meerut के, एक Delhi का। "
+            "6 bank accounts में 45 लाख रुपये freeze किए गए, बाकी recovery जारी है।"
+        ),
+        "source": "Dainik Jagran", "date": "2026-04-10",
+        "url": "https://www.jagran.com", "type": "neg"
+    },
 ]
 
 TIPS = [
@@ -371,15 +565,26 @@ if fetch_btn and news_key:
         for a in live:
             if not a.get("title"):
                 continue
-            t = strip_html(a.get("title", ""))
-            d = strip_html(a.get("description", "") or a.get("content", ""))
+            t   = strip_html(a.get("title", ""))
+            # ── FIX: combine description + content for maximum text ──
+            desc_raw    = strip_html(a.get("description", "") or "")
+            content_raw = strip_html(a.get("content", "") or "")
+            # content often ends with "[+N chars]" — already stripped above
+            # Prefer content if it's longer, else combine both
+            if len(content_raw) > len(desc_raw):
+                d = content_raw
+            elif desc_raw and content_raw and content_raw not in desc_raw:
+                d = desc_raw + " " + content_raw
+            else:
+                d = desc_raw or content_raw
+            d = d or "Vistrit jaankari ke liye neeche link par click karein."
             articles.append({
-                "title": t,
-                "desc": d or "Vistrit jaankari ke liye source par jaayein.",
+                "title":  t,
+                "desc":   d,
                 "source": a.get("source", {}).get("name", ""),
-                "date": (a.get("publishedAt", "") or "")[:10],
-                "url": a.get("url", "#"),
-                "type": classify(t, d),
+                "date":   (a.get("publishedAt", "") or "")[:10],
+                "url":    a.get("url", "#"),
+                "type":   classify(t, d),
             })
         st.success(f"✅ {len(articles)} live articles mile!")
     else:
@@ -394,7 +599,7 @@ if sel_type != "सभी":
     filtered = [a for a in filtered if a["type"] == type_map.get(sel_type, "")]
 
 # ─────────────────────────────────────────────
-# 📋  NEWS RENDERER — flat list, pure st.markdown with escaped text
+# 📋  NEWS RENDERER
 # ─────────────────────────────────────────────
 TYPE_LABEL = {"neg": "⚠️ FRAUD", "pos": "✅ ACTION", "aw": "📢 AWARENESS"}
 TYPE_CSS   = {"neg": "neg", "pos": "pos", "aw": "aw"}
@@ -415,26 +620,28 @@ def show_news_list(news_list: list, prefix: str):
         lbl = TYPE_LABEL.get(tp, "📰 NEWS")
         css = TYPE_CSS.get(tp, "aw")
 
-        # ✅ Escape everything before putting in HTML
         safe_title = html_lib.escape(t)
         safe_desc  = html_lib.escape(d)
         safe_src   = html_lib.escape(src)
-        link_html  = (
-            f' &nbsp;<a href="{html_lib.escape(url)}" target="_blank" '
-            f'style="color:#00e5ff;font-size:0.72rem;text-decoration:none;">🔗 पढ़ें</a>'
-            if url and url != "#" else ""
-        )
+
+        # ── Full article link as attractive pill button ──
+        link_html = ""
+        if url and url != "#":
+            safe_url = html_lib.escape(url)
+            link_html = (
+                f'<br><a href="{safe_url}" target="_blank" class="read-link">'
+                f'📖 पूरी खबर पढ़ें →</a>'
+            )
 
         st.markdown(
             f'<div class="news-item {css}">'
             f'<div class="ntitle">{lbl} &nbsp; {safe_title}</div>'
-            f'<div class="nmeta">📅 {dt} &nbsp;|&nbsp; 📰 {safe_src}{link_html}</div>'
-            f'<div class="ndesc">{safe_desc}</div>'
+            f'<div class="nmeta">📅 {dt} &nbsp;|&nbsp; 📰 {safe_src}</div>'
+            f'<div class="ndesc">{safe_desc}{link_html}</div>'
             f'</div>',
             unsafe_allow_html=True,
         )
 
-        # AI Summary — unique key per tab+index
         btn_key = f"ai_{prefix}_{i}"
         res_key = f"res_{prefix}_{i}"
 
@@ -501,9 +708,10 @@ with tab4:
     st.markdown(f"#### 📢 Awareness Campaigns — {len(aw_list)}")
     show_news_list(aw_list, prefix="t4")
 
+# ── TAB 5: AI POST GENERATOR (improved) ──
 with tab5:
     st.markdown("#### 🤖 AI Social Media Post Generator")
-    st.caption("Groq API (Free) se Hinglish awareness posts banaayein.")
+    st.caption("Platform के हिसाब से emoji-rich, ready-to-paste Hindi posts बनाएँ।")
 
     col_a, col_b = st.columns([2, 1])
     with col_a:
@@ -513,8 +721,24 @@ with tab5:
             height=90,
         )
     with col_b:
-        platform = st.selectbox("Platform", ["Twitter/X", "Facebook", "Instagram", "WhatsApp"])
-        tone     = st.selectbox("Tone", ["Urgent Warning", "Informative", "Motivational", "Helpful Tips"])
+        platform = st.selectbox(
+            "📱 Platform",
+            ["Twitter/X", "Facebook", "Instagram", "WhatsApp"],
+            help="Platform ke hisaab se post format alag hoga"
+        )
+        tone = st.selectbox(
+            "🎯 Tone",
+            ["Urgent Warning", "Informative", "Motivational", "Helpful Tips"]
+        )
+
+    # Platform preview info
+    plat_info = {
+        "Twitter/X":   "280 chars • Short & punchy • 2-3 hashtags",
+        "Facebook":    "300-500 chars • Friendly paragraphs • Community feel",
+        "Instagram":   "Caption + hashtag block • Visual-first • 10+ hashtags",
+        "WhatsApp":    "Forward-friendly • 200-350 chars • Personal tone",
+    }
+    st.info(f"📋 **{platform}** format: {plat_info[platform]}")
 
     if st.button("⚡ Post Generate karein", key="gen_post_main"):
         if not topic.strip():
@@ -522,49 +746,69 @@ with tab5:
         elif not groq_key:
             st.error("Sidebar mein Groq API key daalein.")
         else:
-            with st.spinner("AI post likh raha hai..."):
+            with st.spinner(f"AI {platform} post likh raha hai..."):
                 result = groq_post(groq_key, topic, platform, tone)
             st.session_state["ai_results"]["gen_post"] = result
+            st.session_state["ai_results"]["gen_platform"] = platform
 
     if "gen_post" in st.session_state["ai_results"]:
-        res = st.session_state["ai_results"]["gen_post"]
+        res      = st.session_state["ai_results"]["gen_post"]
+        plat_out = st.session_state["ai_results"].get("gen_platform", platform)
+        char_count = len(res)
+
         st.markdown(
-            f'<div class="ai-box">'
-            f'<b style="color:#00e5ff;font-size:0.78rem;font-family:monospace;">✨ GENERATED POST — {html_lib.escape(platform.upper())}</b>'
-            f'<br><br>{html_lib.escape(res)}</div>',
+            f'<div class="post-card">'
+            f'<div class="platform-badge">✨ {html_lib.escape(plat_out.upper())} POST — READY TO PASTE</div>'
+            f'<div class="post-text">{html_lib.escape(res)}</div>'
+            f'<div class="char-count">{char_count} characters</div>'
+            f'</div>',
             unsafe_allow_html=True,
         )
+
+        # Copy-friendly code block
         st.code(res, language=None)
+        st.caption("⬆️ Upar se copy karein aur directly paste karein!")
 
     st.markdown("---")
     st.markdown("#### 🔁 Quick Post from Latest News")
+    st.caption("Kisi bhi khabar ka 1-click post banayein")
+
     for i, art in enumerate(filtered[:4]):
         c1, c2 = st.columns([5, 1])
         with c1:
             st.caption(f"📰 {art['title'][:85]}…")
         with c2:
-            if st.button("⚡", key=f"qpost_{i}"):
+            if st.button("⚡", key=f"qpost_{i}", help="Iska post banao"):
                 if not groq_key:
                     st.warning("Groq key daalein.")
                 else:
                     with st.spinner("..."):
-                        p = groq_post(groq_key, art["title"], "Twitter/X", "Urgent Warning")
+                        p = groq_post(groq_key, art["title"], "WhatsApp", "Urgent Warning")
                     st.session_state["ai_results"][f"qpost_{i}"] = p
+
         if f"qpost_{i}" in st.session_state["ai_results"]:
-            st.info(st.session_state["ai_results"][f"qpost_{i}"])
+            qres = st.session_state["ai_results"][f"qpost_{i}"]
+            st.markdown(
+                f'<div class="post-card">'
+                f'<div class="platform-badge">⚡ WHATSAPP — QUICK POST</div>'
+                f'<div class="post-text">{html_lib.escape(qres)}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            st.code(qres, language=None)
 
 with tab6:
     st.markdown("#### 🛡️ Cyber Safety Tips — उत्तर प्रदेश")
     st.error("🆘 Cyber Fraud hua? **1930** par call karein | **cybercrime.gov.in** par report karein")
     st.markdown("---")
-    for icon, title, desc in TIPS:
+    for icon, title_tip, desc_tip in TIPS:
         st.markdown(
             f'<div class="tip-card">'
             f'<div style="font-size:1.8rem;">{icon}</div>'
             f'<div style="color:#00e5ff;font-weight:700;font-size:1rem;margin:0.3rem 0;">'
-            f'{html_lib.escape(title)}</div>'
+            f'{html_lib.escape(title_tip)}</div>'
             f'<div style="color:#a0b8d0;font-family:\'Noto Sans Devanagari\',sans-serif;'
-            f'font-size:0.88rem;line-height:1.7;">{html_lib.escape(desc)}</div>'
+            f'font-size:0.88rem;line-height:1.7;">{html_lib.escape(desc_tip)}</div>'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -578,3 +822,4 @@ st.markdown(
     f' &nbsp;|&nbsp; HELPLINE: 1930</div>',
     unsafe_allow_html=True,
 )
+
