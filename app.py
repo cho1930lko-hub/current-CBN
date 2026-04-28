@@ -82,6 +82,20 @@ html, body, [class*="css"] {
 }
 .ticker b { color:#ff4b4b; font-family:'Share Tech Mono',monospace; font-size:0.7rem; letter-spacing:2px; }
 
+/* ── DEMO BANNER ── */
+.demo-banner {
+    background: linear-gradient(135deg, rgba(255,165,0,0.15), rgba(255,100,0,0.1));
+    border: 1px solid rgba(255,165,0,0.5);
+    border-left: 4px solid #ffa500;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: #ffa500;
+    letter-spacing: 1px;
+}
+
 /* ── NEWS CARD ── */
 .news-item {
     border-left:4px solid #00e5ff;
@@ -342,111 +356,128 @@ def classify(title: str, desc: str) -> str:
 
 
 # ─────────────────────────────────────────────
-# 📊  DEMO DATA
+# 📊  DEMO DATA  ← BUG FIX: Dynamic dates (today se relative)
 # ─────────────────────────────────────────────
-DEMO = [
-    {
-        "title": "Lucknow: OTP Fraud Gang Busted — 12 Arrested by UP Cyber Cell",
-        "desc": (
-            "UP Police की Cyber Cell ने Lucknow में एक बड़े OTP fraud gang का पर्दाफाश किया है। "
-            "इस गैंग के 12 सदस्यों को गिरफ्तार किया गया, जो पिछले 2 वर्षों से सक्रिय थे। "
-            "आरोपी खुद को बैंक अधिकारी बताकर पीड़ितों से OTP मांगते थे और उनके खाते खाली कर देते थे। "
-            "45 लाख रुपये नकद, 18 मोबाइल फोन, और 6 SIM card cloning devices बरामद हुईं। "
-            "अब तक 200 से अधिक शिकायतें इस गैंग से जुड़ी हैं। पीड़ितों को रकम refund की प्रक्रिया शुरू की गई।"
-        ),
-        "source": "Amar Ujala", "date": "2026-04-17",
-        "url": "https://www.amarujala.com", "type": "pos"
-    },
-    {
-        "title": "Kanpur: Online Loan App Scam — 200+ Victims File Complaint",
-        "desc": (
-            "Kanpur में fake loan apps के जरिए 200 से अधिक लोगों से ठगी का मामला सामने आया है। "
-            "आरोपियों ने Play Store पर नकली lending app upload की थी जो असली दिखती थी। "
-            "App install करते ही contacts और gallery का access ले लिया जाता था। "
-            "फिर fake CIBIL score दिखाकर 50,000 से 2 लाख तक का loan देने का झांसा दिया जाता था। "
-            "Processing fee के नाम पर 5,000 से 20,000 रुपये ऐंठे जाते थे और बाद में blackmail किया जाता था। "
-            "पुलिस ने मुख्य आरोपी दिल्ली से गिरफ्तार किया, जांच जारी है।"
-        ),
-        "source": "Dainik Jagran", "date": "2026-04-16",
-        "url": "https://www.jagran.com", "type": "neg"
-    },
-    {
-        "title": "Varanasi: Cyber Safety Workshop in 50 Schools — 10,000 Students Trained",
-        "desc": (
-            "Varanasi Police ने 'Safe Digital Bharat' अभियान के तहत 50 schools में Cyber Safety Workshop आयोजित की। "
-            "10,000 से अधिक students को digital fraud, phishing, social media safety और online gaming addiction के बारे में जागरूक किया गया। "
-            "विशेष रूप से class 8 से 12 के बच्चों को target किया गया क्योंकि वे social media पर सबसे अधिक active हैं। "
-            "Workshop में fake profiles पहचानना, password security और cyber bullying से बचाव सिखाया गया। "
-            "अगले 3 महीनों में 100 और schools को cover करने की योजना है।"
-        ),
-        "source": "Hindustan Times", "date": "2026-04-15",
-        "url": "https://www.hindustantimes.com", "type": "aw"
-    },
-    {
-        "title": "Noida: Fake Job Portal Scam — IT Professionals Targeted",
-        "desc": (
-            "Noida में एक fake job portal 'TechHire India' ने IT professionals को निशाना बनाया। "
-            "LinkedIn जैसी दिखने वाली इस website पर MNCs के नाम से fake job listings डाली गईं। "
-            "Interview के बाद 'selection' letter भेजकर 15,000 से 50,000 रुपये registration fee माँगी जाती थी। "
-            "85 शिकायतें दर्ज हुईं, कुल नुकसान 28 लाख रुपये से अधिक। "
-            "Cybercrime portal पर FIR filed की गई, 2 servers Maharashtra से trace किए गए। "
-            "पुलिस ने alert जारी करते हुए कहा कि कोई genuine company advance fee नहीं माँगती।"
-        ),
-        "source": "Times of India UP", "date": "2026-04-14",
-        "url": "https://timesofindia.indiatimes.com", "type": "neg"
-    },
-    {
-        "title": "Agra: Cyber Cell Recovers Rs 32 Lakh for Senior Citizen Fraud Victim",
-        "desc": (
-            "Agra के 68 वर्षीय retired teacher श्री रामप्रसाद वर्मा को digital arrest fraud का शिकार बनाया गया था। "
-            "आरोपियों ने CBI officer बनकर video call की और कहा कि उनके account से money laundering हो रही है। "
-            "डर के कारण उन्होंने 32 लाख रुपये अलग-अलग accounts में transfer कर दिए। "
-            "परिवार ने 24 घंटे के भीतर 1930 पर complaint की। "
-            "UP Cyber Cell ने तत्परता से action लेकर सभी transactions freeze कराईं और पूरी 32 लाख रुपये की रकम वापस दिलाई। "
-            "यह UP Cyber Cell की 2026 की सबसे बड़ी recovery है।"
-        ),
-        "source": "UP Police Official", "date": "2026-04-13",
-        "url": "https://uppolice.gov.in", "type": "pos"
-    },
-    {
-        "title": "Gorakhpur: Phishing SMS Campaign Targets Bank Customers",
-        "desc": (
-            "Gorakhpur और आसपास के जिलों में bank customers को fake KYC update SMS भेजे जा रहे हैं। "
-            "SMS में लिखा होता है: 'आपका account 24 घंटे में बंद हो जाएगा, यहाँ click करें।' "
-            "Link पर click करने पर एक fake bank website खुलती है जो बिल्कुल असली जैसी दिखती है। "
-            "वहाँ login details और OTP enter करते ही account empty हो जाता है। "
-            "अब तक 45 लोग इसके शिकार हो चुके हैं, कुल नुकसान 18 लाख रुपये। "
-            "UP Cyber Cell ने alert जारी किया: Bank कभी SMS पर link नहीं भेजता। Helpline 1930 पर call करें।"
-        ),
-        "source": "Amar Ujala", "date": "2026-04-12",
-        "url": "https://www.amarujala.com", "type": "neg"
-    },
-    {
-        "title": "Prayagraj: Digital Arrest Campaign — 'Ruko Socho Report Karo'",
-        "desc": (
-            "Prayagraj Police ने 'रुको, सोचो, Report करो' नाम से एक बड़ा digital arrest awareness campaign शुरू किया है। "
-            "इस campaign में 500 से अधिक rickshaw, auto और bus stands पर जागरूकता posters लगाए गए हैं। "
-            "साथ ही local cable TV पर short awareness videos चलाई जा रही हैं। "
-            "Mohalla-level पर volunteers को trained किया गया है जो घर-घर जाकर senior citizens को समझाते हैं। "
-            "Campaign का focus है: CBI/ED/Police कभी video call पर arrest नहीं करती, घबराएँ नहीं, पहले 1930 call करें।"
-        ),
-        "source": "Prayagraj Police", "date": "2026-04-11",
-        "url": "https://uppolice.gov.in", "type": "aw"
-    },
-    {
-        "title": "Meerut: Cryptocurrency Fraud — Rs 1.2 Crore Scam Exposed",
-        "desc": (
-            "Meerut में एक fake crypto trading platform 'CryptoGainIndia' ने investors से 1.2 crore रुपये ठगे। "
-            "Platform पर पहले छोटा investment डलवाया जाता था और fake profit दिखाया जाता था। "
-            "जब बड़ा amount invest होता था तो platform 'maintenance mode' में चला जाता था। "
-            "32 investors ने 1.5 लाख से 8 लाख तक invest किए थे। "
-            "Cyber Cell ने 3 accused arrest किए — दो Meerut के, एक Delhi का। "
-            "6 bank accounts में 45 लाख रुपये freeze किए गए, बाकी recovery जारी है।"
-        ),
-        "source": "Dainik Jagran", "date": "2026-04-10",
-        "url": "https://www.jagran.com", "type": "neg"
-    },
-]
+def build_demo_articles() -> list:
+    """
+    Demo articles ki dates aaj se relative hain.
+    Jis din bhi app kholo, latest date aaj ki hogi.
+    """
+    today = datetime.now()
+
+    raw = [
+        {
+            "title": "Lucknow: OTP Fraud Gang Busted — 12 Arrested by UP Cyber Cell",
+            "desc": (
+                "UP Police की Cyber Cell ने Lucknow में एक बड़े OTP fraud gang का पर्दाफाश किया है। "
+                "इस गैंग के 12 सदस्यों को गिरफ्तार किया गया, जो पिछले 2 वर्षों से सक्रिय थे। "
+                "आरोपी खुद को बैंक अधिकारी बताकर पीड़ितों से OTP मांगते थे और उनके खाते खाली कर देते थे। "
+                "45 लाख रुपये नकद, 18 मोबाइल फोन, और 6 SIM card cloning devices बरामद हुईं। "
+                "अब तक 200 से अधिक शिकायतें इस गैंग से जुड़ी हैं। पीड़ितों को रकम refund की प्रक्रिया शुरू की गई।"
+            ),
+            "source": "Amar Ujala", "days_ago": 0,   # आज की खबर
+            "url": "https://www.amarujala.com", "type": "pos"
+        },
+        {
+            "title": "Kanpur: Online Loan App Scam — 200+ Victims File Complaint",
+            "desc": (
+                "Kanpur में fake loan apps के जरिए 200 से अधिक लोगों से ठगी का मामला सामने आया है। "
+                "App install करते ही contacts और gallery का access ले लिया जाता था। "
+                "Processing fee के नाम पर 5,000 से 20,000 रुपये ऐंठे जाते थे और बाद में blackmail किया जाता था। "
+                "पुलिस ने मुख्य आरोपी दिल्ली से गिरफ्तार किया, जांच जारी है।"
+            ),
+            "source": "Dainik Jagran", "days_ago": 1,
+            "url": "https://www.jagran.com", "type": "neg"
+        },
+        {
+            "title": "Varanasi: Cyber Safety Workshop in 50 Schools — 10,000 Students Trained",
+            "desc": (
+                "Varanasi Police ने 'Safe Digital Bharat' अभियान के तहत 50 schools में Cyber Safety Workshop आयोजित की। "
+                "10,000 से अधिक students को digital fraud, phishing, social media safety के बारे में जागरूक किया गया। "
+                "Workshop में fake profiles पहचानना, password security और cyber bullying से बचाव सिखाया गया। "
+                "अगले 3 महीनों में 100 और schools को cover करने की योजना है।"
+            ),
+            "source": "Hindustan Times", "days_ago": 2,
+            "url": "https://www.hindustantimes.com", "type": "aw"
+        },
+        {
+            "title": "Noida: Fake Job Portal Scam — IT Professionals Targeted",
+            "desc": (
+                "Noida में एक fake job portal 'TechHire India' ने IT professionals को निशाना बनाया। "
+                "Interview के बाद 'selection' letter भेजकर 15,000 से 50,000 रुपये registration fee माँगी जाती थी। "
+                "85 शिकायतें दर्ज हुईं, कुल नुकसान 28 लाख रुपये से अधिक। "
+                "पुलिस ने alert जारी करते हुए कहा कि कोई genuine company advance fee नहीं माँगती।"
+            ),
+            "source": "Times of India UP", "days_ago": 3,
+            "url": "https://timesofindia.indiatimes.com", "type": "neg"
+        },
+        {
+            "title": "Agra: Cyber Cell Recovers Rs 32 Lakh for Senior Citizen Fraud Victim",
+            "desc": (
+                "Agra के 68 वर्षीय retired teacher को digital arrest fraud का शिकार बनाया गया था। "
+                "आरोपियों ने CBI officer बनकर video call की और money laundering का डर दिखाया। "
+                "परिवार ने 24 घंटे के भीतर 1930 पर complaint की। "
+                "UP Cyber Cell ने तत्परता से action लेकर पूरी 32 लाख रुपये की रकम वापस दिलाई। "
+                "यह UP Cyber Cell की इस साल की सबसे बड़ी recovery है।"
+            ),
+            "source": "UP Police Official", "days_ago": 4,
+            "url": "https://uppolice.gov.in", "type": "pos"
+        },
+        {
+            "title": "Gorakhpur: Phishing SMS Campaign Targets Bank Customers",
+            "desc": (
+                "Gorakhpur में bank customers को fake KYC update SMS भेजे जा रहे हैं। "
+                "SMS में लिखा होता है: 'आपका account 24 घंटे में बंद हो जाएगा, यहाँ click करें।' "
+                "Link पर click करने पर एक fake bank website खुलती है और OTP enter करते ही account empty हो जाता है। "
+                "अब तक 45 लोग शिकार हो चुके हैं। UP Cyber Cell ने alert जारी किया: Bank कभी SMS पर link नहीं भेजता।"
+            ),
+            "source": "Amar Ujala", "days_ago": 5,
+            "url": "https://www.amarujala.com", "type": "neg"
+        },
+        {
+            "title": "Prayagraj: Digital Arrest Campaign — 'Ruko Socho Report Karo'",
+            "desc": (
+                "Prayagraj Police ने 'रुको, सोचो, Report करो' नाम से एक बड़ा digital arrest awareness campaign शुरू किया है। "
+                "500 से अधिक rickshaw, auto और bus stands पर जागरूकता posters लगाए गए हैं। "
+                "Mohalla-level पर volunteers senior citizens को घर-घर जाकर समझाते हैं। "
+                "Campaign का focus: CBI/ED/Police कभी video call पर arrest नहीं करती।"
+            ),
+            "source": "Prayagraj Police", "days_ago": 6,
+            "url": "https://uppolice.gov.in", "type": "aw"
+        },
+        {
+            "title": "Meerut: Cryptocurrency Fraud — Rs 1.2 Crore Scam Exposed",
+            "desc": (
+                "Meerut में एक fake crypto trading platform 'CryptoGainIndia' ने investors से 1.2 crore रुपये ठगे। "
+                "Platform पर पहले छोटा investment डलवाया जाता था और fake profit दिखाया जाता था। "
+                "जब बड़ा amount invest होता था तो platform 'maintenance mode' में चला जाता था। "
+                "Cyber Cell ने 3 accused arrest किए और 6 bank accounts में 45 लाख रुपये freeze किए।"
+            ),
+            "source": "Dainik Jagran", "days_ago": 7,
+            "url": "https://www.jagran.com", "type": "neg"
+        },
+    ]
+
+    articles = []
+    for item in raw:
+        # ── BUG FIX: Date dynamically calculate karo ──
+        art_date = (today - timedelta(days=item["days_ago"])).strftime("%Y-%m-%d")
+        articles.append({
+            "title":  item["title"],
+            "desc":   item["desc"],
+            "source": item["source"],
+            "date":   art_date,          # ✅ Ab hamesha current date relative hogi
+            "url":    item["url"],
+            "type":   item["type"],
+            "is_demo": True,             # ✅ Demo flag for banner
+        })
+
+    # ── BUG FIX: Latest date pehle aaye (descending sort) ──
+    articles.sort(key=lambda x: x["date"], reverse=True)
+    return articles
+
+
+DEMO = build_demo_articles()   # ✅ Function call — har baar fresh dates
 
 TIPS = [
     ("🔐", "OTP कभी Share न करें",
@@ -478,6 +509,8 @@ for k in ["news_api_key", "groq_api_key"]:
         st.session_state[k] = ""
 if "ai_results" not in st.session_state:
     st.session_state["ai_results"] = {}
+if "using_demo" not in st.session_state:
+    st.session_state["using_demo"] = True   # ✅ Track demo vs live
 
 # ─────────────────────────────────────────────
 # 🗂️  SIDEBAR
@@ -566,11 +599,8 @@ if fetch_btn and news_key:
             if not a.get("title"):
                 continue
             t   = strip_html(a.get("title", ""))
-            # ── FIX: combine description + content for maximum text ──
             desc_raw    = strip_html(a.get("description", "") or "")
             content_raw = strip_html(a.get("content", "") or "")
-            # content often ends with "[+N chars]" — already stripped above
-            # Prefer content if it's longer, else combine both
             if len(content_raw) > len(desc_raw):
                 d = content_raw
             elif desc_raw and content_raw and content_raw not in desc_raw:
@@ -585,10 +615,17 @@ if fetch_btn and news_key:
                 "date":   (a.get("publishedAt", "") or "")[:10],
                 "url":    a.get("url", "#"),
                 "type":   classify(t, d),
+                "is_demo": False,    # ✅ Live article hai
             })
+        # ── BUG FIX: Live news bhi date sort karo ──
+        articles.sort(key=lambda x: x["date"], reverse=True)
+        st.session_state["using_demo"] = False
         st.success(f"✅ {len(articles)} live articles mile!")
     else:
+        st.session_state["using_demo"] = True
         st.warning("Live data nahi mila — demo data dikhaaya ja raha hai.")
+elif fetch_btn and not news_key:
+    st.warning("Sidebar mein NewsAPI key daalein pehle.")
 
 filtered = articles
 if sel_dist != "सभी जिले":
@@ -610,6 +647,17 @@ def show_news_list(news_list: list, prefix: str):
         st.info("Is category mein koi khabar nahi mili. Filter badlein.")
         return
 
+    # ── BUG FIX: Demo banner — sirf demo mode mein dikhao ──
+    if st.session_state.get("using_demo", True) and any(a.get("is_demo") for a in news_list):
+        today_str = datetime.now().strftime("%d %b %Y")
+        st.markdown(
+            f'<div class="demo-banner">'
+            f'⚠️ DEMO MODE — Yeh sample data hai. Real news ke liye sidebar mein '
+            f'NewsAPI key daalein aur "Live News Fetch" karein. '
+            f'Dates aaj ({today_str}) se relative hain.</div>',
+            unsafe_allow_html=True,
+        )
+
     for i, art in enumerate(news_list):
         t   = art["title"]
         d   = art["desc"]
@@ -624,7 +672,6 @@ def show_news_list(news_list: list, prefix: str):
         safe_desc  = html_lib.escape(d)
         safe_src   = html_lib.escape(src)
 
-        # ── Full article link as attractive pill button ──
         link_html = ""
         if url and url != "#":
             safe_url = html_lib.escape(url)
@@ -697,9 +744,9 @@ with tab3:
     pos_list = [a for a in filtered if a["type"] == "pos"]
     st.markdown(f"#### ✅ Police Actions & Success Stories — {len(pos_list)}")
     col1, col2, col3 = st.columns(3)
-    col1.metric("💰 Recovered", "Rs 4.2 Cr", "April 2026")
-    col2.metric("👮 Arrests",   "156",       "April 2026")
-    col3.metric("📁 Cases Closed", "892",    "April 2026")
+    col1.metric("💰 Recovered", "Rs 4.2 Cr", f"{datetime.now().strftime('%B %Y')}")
+    col2.metric("👮 Arrests",   "156",       f"{datetime.now().strftime('%B %Y')}")
+    col3.metric("📁 Cases Closed", "892",    f"{datetime.now().strftime('%B %Y')}")
     st.markdown("---")
     show_news_list(pos_list, prefix="t3")
 
@@ -708,10 +755,10 @@ with tab4:
     st.markdown(f"#### 📢 Awareness Campaigns — {len(aw_list)}")
     show_news_list(aw_list, prefix="t4")
 
-# ── TAB 5: AI POST GENERATOR (improved) ──
+# ── TAB 5: AI POST GENERATOR ──
 with tab5:
     st.markdown("#### 🤖 AI Social Media Post Generator")
-    st.caption("Platform के हिसाब से emoji-rich, ready-to-paste Hindi posts बनाएँ।")
+    st.caption("Platform ke hisaab se emoji-rich, ready-to-paste Hindi posts banayein.")
 
     col_a, col_b = st.columns([2, 1])
     with col_a:
@@ -731,7 +778,6 @@ with tab5:
             ["Urgent Warning", "Informative", "Motivational", "Helpful Tips"]
         )
 
-    # Platform preview info
     plat_info = {
         "Twitter/X":   "280 chars • Short & punchy • 2-3 hashtags",
         "Facebook":    "300-500 chars • Friendly paragraphs • Community feel",
@@ -764,8 +810,6 @@ with tab5:
             f'</div>',
             unsafe_allow_html=True,
         )
-
-        # Copy-friendly code block
         st.code(res, language=None)
         st.caption("⬆️ Upar se copy karein aur directly paste karein!")
 
@@ -822,4 +866,3 @@ st.markdown(
     f' &nbsp;|&nbsp; HELPLINE: 1930</div>',
     unsafe_allow_html=True,
 )
-
