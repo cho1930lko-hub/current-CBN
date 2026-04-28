@@ -647,8 +647,10 @@ def show_news_list(news_list: list, prefix: str):
         st.info("Is category mein koi khabar nahi mili. Filter badlein.")
         return
 
-    # ── BUG FIX: Demo banner — sirf demo mode mein dikhao ──
-    if st.session_state.get("using_demo", True) and any(a.get("is_demo") for a in news_list):
+    # ── BUG FIX: Demo banner — sirf tab dikhao jab NewsAPI key na ho ──
+    news_api_present = bool(get_secret("NEWS_API_KEY") or st.session_state.get("news_api_key", ""))
+    is_showing_demo  = any(a.get("is_demo") for a in news_list)
+    if is_showing_demo and not news_api_present:
         today_str = datetime.now().strftime("%d %b %Y")
         st.markdown(
             f'<div class="demo-banner">'
